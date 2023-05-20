@@ -1,0 +1,32 @@
+import 'package:path/path.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+abstract class RecipeDB {
+  static late String path;
+  static Future<Database> openDB() async {
+    sqfliteFfiInit();
+
+    databaseFactory = databaseFactoryFfi;
+    var databasesPath = await getDatabasesPath();
+
+    path = join(databasesPath, 'recipes.db');
+
+    var db = await openDatabase(
+      path,
+      version: 1,
+      onCreate: (Database db, int version) async {
+        // When creating the db, create the table
+        await db.execute(
+          'CREATE TABLE Recipe (id INTEGER PRIMARY KEY, name TEXT, url TEXT)'
+        );
+        await db.execute(
+          'CREATE TABLE RecipeIngredient (id INTEGER PRIMARY KEY, recipe_id INTEGER, ingredient TEXT)'
+        );
+      
+      }
+    );
+
+    return db;
+  }
+
+}
